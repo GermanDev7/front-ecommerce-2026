@@ -89,7 +89,7 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }: Crea
 
   const handleSubmit = async () => {
     if (items.length === 0) {
-      setError('Please add at least one item to the order');
+      setError('Por favor agrega al menos un ítem a la orden');
       return;
     }
 
@@ -132,7 +132,7 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }: Crea
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
-      <DialogTitle sx={{ fontWeight: 'bold' }}>Create New Order</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 'bold' }}>Crear Nueva Orden</DialogTitle>
       <DialogContent dividers>
         {error && (
           <Typography color="error" variant="body2" sx={{ mb: 2 }}>
@@ -143,7 +143,7 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }: Crea
         <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'flex-start' }}>
           <TextField
             select
-            label="Product"
+            label="Producto"
             value={selectedProductId}
             onChange={(e) => setSelectedProductId(e.target.value)}
             fullWidth
@@ -151,13 +151,13 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }: Crea
           >
             {products.map((product) => (
               <MenuItem key={product.id} value={product.id}>
-                {product.name} - ${product.price}
+                {product.name} - $ {product.price.toLocaleString('es-CO')}
               </MenuItem>
             ))}
           </TextField>
           <TextField
             type="number"
-            label="Qty"
+            label="Cant."
             value={quantity}
             onChange={(e) => setQuantity(e.target.value === '' ? '' : Number(e.target.value))}
             inputProps={{ min: 1 }}
@@ -171,17 +171,17 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }: Crea
             disabled={!selectedProductId || quantity === '' || quantity < 1}
             sx={{ height: 40 }}
           >
-            Add
+            Agregar
           </Button>
         </Box>
 
         <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
-          Order Items
+          Ítems de la Orden
         </Typography>
         
         {items.length === 0 ? (
           <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', textAlign: 'center', py: 2 }}>
-            No items added yet.
+            No hay ítems agregados aún.
           </Typography>
         ) : (
           <List disablePadding>
@@ -190,11 +190,11 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }: Crea
                 <ListItem sx={{ px: 0 }}>
                   <ListItemText
                     primary={item.product?.name}
-                    secondary={`${item.quantity} x $${item.product?.price.toFixed(2)}`}
+                    secondary={`${item.quantity} x $ ${item.product?.price?.toLocaleString('es-CO') || '0'}`}
                   />
                   <ListItemSecondaryAction>
                     <Typography component="span" sx={{ fontWeight: 'bold', mr: 2 }}>
-                      ${((item.product?.price || 0) * item.quantity).toFixed(2)}
+                      $ {((item.product?.price || 0) * item.quantity).toLocaleString('es-CO')}
                     </Typography>
                     <IconButton edge="end" aria-label="delete" color="error" onClick={() => handleRemoveItem(index)}>
                       <DeleteIcon />
@@ -210,13 +210,13 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }: Crea
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
           <Typography variant="h6">Total:</Typography>
           <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold' }}>
-            ${totalAmount.toFixed(2)}
+            $ {totalAmount.toLocaleString('es-CO')}
           </Typography>
         </Box>
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
         <Button onClick={onClose} color="inherit" disabled={loading}>
-          Cancel
+          Cancelar
         </Button>
         <Button 
           onClick={handleSubmit} 
@@ -224,7 +224,7 @@ export default function CreateOrderModal({ open, onClose, onOrderCreated }: Crea
           color="primary" 
           disabled={loading || items.length === 0}
         >
-          {loading ? 'Creating...' : 'Create Order'}
+          {loading ? 'Creando...' : 'Crear Orden'}
         </Button>
       </DialogActions>
     </Dialog>

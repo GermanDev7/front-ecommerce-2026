@@ -9,6 +9,7 @@ import {
   Alert,
   Chip,
   Fade,
+  Pagination,
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import { getProducts, type Product } from '../services/api';
@@ -19,6 +20,8 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 15;
 
   const fetchProducts = async () => {
     try {
@@ -52,12 +55,14 @@ export default function Products() {
   }
 
   const safeProducts = Array.isArray(products) ? products : [];
+  const totalPages = Math.ceil(safeProducts.length / itemsPerPage);
+  const paginatedProducts = safeProducts.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
         <Typography variant="h4" component="h1">
-          Catalog
+          Catálogo
         </Typography>
         <Button
           variant="contained"
@@ -65,7 +70,7 @@ export default function Products() {
           startIcon={<AddIcon />}
           onClick={() => setIsModalOpen(true)}
         >
-          Create Product
+          Crear Producto
         </Button>
       </Box>
       
@@ -77,7 +82,7 @@ export default function Products() {
 
       {safeProducts.length === 0 && !loading && !error ? (
         <Alert severity="info" sx={{ borderRadius: 2 }}>
-          No products available at the moment. Create one!
+          No hay productos disponibles por el momento. ¡Crea uno!
         </Alert>
       ) : (
         <Box 
@@ -87,7 +92,7 @@ export default function Products() {
             gap: 4 
           }}
         >
-          {safeProducts.map((product, index) => (
+          {paginatedProducts.map((product, index) => (
             <Box key={product.id}>
               <Fade in={true} style={{ transitionDelay: `${index * 100}ms` }}>
                 <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -105,7 +110,7 @@ export default function Products() {
                         {product.name}
                       </Typography>
                       <Chip 
-                        label={`$${product.price.toFixed(2)}`} 
+                        label={`$ ${product.price.toLocaleString('es-CO')}`} 
                         color="primary" 
                         variant="filled" 
                         size="small"
@@ -116,7 +121,7 @@ export default function Products() {
                       {product.description}
                     </Typography>
                     <Typography variant="caption" sx={{ color: product.stock > 10 ? 'success.main' : 'warning.main', fontWeight: 'bold' }}>
-                      {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                      {product.stock > 0 ? `${product.stock} disponibles` : 'Agotado'}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -124,6 +129,16 @@ export default function Products() {
             </Box>
           ))}
         </Box>
+      )}
+
+      {totalPages > 1 && (
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(_, value) => setPage(value)}
+          color="primary"
+          sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}
+        />
       )}
 
       <CreateProductModal 

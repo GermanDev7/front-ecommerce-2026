@@ -27,7 +27,7 @@ export default function CreateProductModal({ open, onClose, onProductCreated }: 
 
   const handleSubmit = async () => {
     if (!name || !price || !stock) {
-      setError('Please fill all required fields');
+      setError('Por favor llena todos los campos requeridos');
       return;
     }
 
@@ -62,7 +62,7 @@ export default function CreateProductModal({ open, onClose, onProductCreated }: 
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 2 } }}>
-      <DialogTitle sx={{ fontWeight: 'bold' }}>Create New Product</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 'bold' }}>Crear Nuevo Producto</DialogTitle>
       <DialogContent dividers>
         {error && (
           <Typography color="error" variant="body2" sx={{ mb: 2 }}>
@@ -71,7 +71,7 @@ export default function CreateProductModal({ open, onClose, onProductCreated }: 
         )}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
           <TextField
-            label="Product Name"
+            label="Nombre del Producto"
             value={name}
             onChange={(e) => setName(e.target.value)}
             fullWidth
@@ -79,7 +79,7 @@ export default function CreateProductModal({ open, onClose, onProductCreated }: 
             required
           />
           <TextField
-            label="Description"
+            label="Descripción"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             fullWidth
@@ -90,7 +90,7 @@ export default function CreateProductModal({ open, onClose, onProductCreated }: 
           <Box sx={{ display: 'flex', gap: 2 }}>
             <TextField
               type="number"
-              label="Price"
+              label="Precio"
               value={price}
               onChange={(e) => setPrice(e.target.value === '' ? '' : Number(e.target.value))}
               fullWidth
@@ -111,7 +111,7 @@ export default function CreateProductModal({ open, onClose, onProductCreated }: 
       </DialogContent>
       <DialogActions sx={{ p: 2 }}>
         <Button onClick={onClose} color="inherit" disabled={loading}>
-          Cancel
+          Cancelar
         </Button>
         <Button 
           onClick={handleSubmit} 
@@ -119,7 +119,7 @@ export default function CreateProductModal({ open, onClose, onProductCreated }: 
           color="primary" 
           disabled={loading || !name || !price || !stock}
         >
-          {loading ? 'Creating...' : 'Create Product'}
+          {loading ? 'Creando...' : 'Crear Producto'}
         </Button>
       </DialogActions>
     </Dialog>

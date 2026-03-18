@@ -23,8 +23,8 @@ const Layout: React.FC = () => {
   const theme = useTheme();
 
   const navItems = [
-    { label: 'Products', path: '/', icon: <StorefrontIcon sx={{ mr: 1 }} /> },
-    { label: 'Orders', path: '/orders', icon: <ShoppingCartIcon sx={{ mr: 1 }} /> },
+    { label: 'Productos', path: '/', icon: <StorefrontIcon sx={{ mr: 1 }} /> },
+    { label: 'Órdenes', path: '/orders', icon: <ShoppingCartIcon sx={{ mr: 1 }} /> },
   ];
 
   return (
@@ -91,8 +91,8 @@ const Layout: React.FC = () => {
         <Container maxWidth="lg">
           <Typography variant="body2" color="text.secondary" align="center">
             {'© '}
-            E-Commerce Technical Test {new Date().getFullYear()}
-            {'. Built with React & MUI.'}
+            Prueba Técnica E-Commerce {new Date().getFullYear()}
+            {'. Construido con React & MUI.'}
           </Typography>
         </Container>
       </Box>
