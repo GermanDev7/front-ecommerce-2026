@@ -10,6 +10,7 @@ import {
   Button,
   useTheme,
   CssBaseline,
+  Avatar,
 } from '@mui/material';
 import {
   Storefront as StorefrontIcon,
@@ -24,7 +25,7 @@ const Layout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, user } = useAuth();
 
   const navItems = [
     { label: 'Productos', path: '/', icon: <StorefrontIcon sx={{ mr: 1 }} /> },
@@ -75,10 +76,31 @@ const Layout: React.FC = () => {
             ))}
             
             {isAuthenticated ? (
-              <Button color="inherit" onClick={logout} sx={{ ml: 2 }}>
-                <LogoutIcon sx={{ mr: 1 }} />
-                Salir
-              </Button>
+              <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
+                {user && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mr: 2, bgcolor: 'rgba(255,255,255,0.1)', py: 0.5, px: 1.5, borderRadius: 2 }}>
+                    <Avatar 
+                      sx={{ 
+                        width: 30, 
+                        height: 30, 
+                        bgcolor: 'primary.light',
+                        color: 'primary.contrastText',
+                        fontSize: '0.9rem',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      {user.name ? user.name.charAt(0).toUpperCase() : user.email?.charAt(0).toUpperCase() || 'U'}
+                    </Avatar>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      {user.name || user.email?.split('@')[0]}
+                    </Typography>
+                  </Box>
+                )}
+                <Button color="inherit" onClick={logout}>
+                  <LogoutIcon sx={{ mr: 1 }} />
+                  Salir
+                </Button>
+              </Box>
             ) : (
               <Button color="inherit" onClick={() => navigate('/login')} sx={{ ml: 2 }}>
                 <LoginIcon sx={{ mr: 1 }} />

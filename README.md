@@ -65,9 +65,10 @@ Este frontend tiene como objetivo servir como cliente de la API backend, permiti
 
 - Registro de usuarios.
 - Inicio de sesión con autenticación JWT.
+- Cierre de sesión.
 - Protección de rutas privadas.
 - Visualización del catálogo de productos.
-- Creación de productos mediante formulario modal.
+- Creación de productos mediante formulario modal(Este por temas de simplidad y pruebas  se dejo abierto).
 - Creación de órdenes con múltiples ítems.
 - Cálculo automático del total de la orden.
 - Validación de stock contra la API.
