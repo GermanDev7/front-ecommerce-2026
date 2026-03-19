@@ -1,62 +1,54 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Typography,
   Card,
   CardContent,
   Button,
-  CircularProgress,
   Alert,
   Chip,
   Fade,
   Pagination,
+  Skeleton,
+  Snackbar,
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import { getProducts, type Product } from '../services/api';
 import CreateProductModal from '../components/CreateProductModal';
+import { useProducts } from '../hooks/useProducts';
 
-export default function Products() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const Products: React.FC = () => {
+  const { products: paginatedProducts, loading, error, page, setPage, totalPages, refreshProducts } = useProducts();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 15;
+  const [toastOpen, setToastOpen] = useState(false);
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const data = await getProducts();
-      setProducts(Array.isArray(data) ? data : []);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching products:', err);
-      setError('Could not connect to the API or an error occurred.');
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const handleProductCreated = () => {
-    fetchProducts();
-  };
+  // Internal logic moved to src/hooks/useProducts.ts
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
-        <CircularProgress size={60} thickness={4} />
+      <Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Typography variant="h4" component="h1">Catálogo</Typography>
+          <Skeleton variant="rectangular" width={160} height={40} sx={{ borderRadius: 1 }} />
+        </Box>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 4 }}>
+          {[...Array(6)].map((_, index) => (
+            <Card key={index} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+              <Skeleton variant="rectangular" height={160} />
+              <CardContent sx={{ flexGrow: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                  <Skeleton variant="text" width="60%" height={32} />
+                  <Skeleton variant="rectangular" width="25%" height={24} sx={{ borderRadius: 4 }} />
+                </Box>
+                <Skeleton variant="text" width="100%" height={20} sx={{ mb: 1 }} />
+                <Skeleton variant="text" width="80%" height={20} sx={{ mb: 2 }} />
+                <Skeleton variant="text" width="40%" height={24} />
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
       </Box>
     );
   }
-
-  const safeProducts = Array.isArray(products) ? products : [];
-  const totalPages = Math.ceil(safeProducts.length / itemsPerPage);
-  const paginatedProducts = safeProducts.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   return (
     <Box>
@@ -80,7 +72,7 @@ export default function Products() {
         </Alert>
       )}
 
-      {safeProducts.length === 0 && !loading && !error ? (
+      {paginatedProducts.length === 0 && !loading && !error ? (
         <Alert severity="info" sx={{ borderRadius: 2 }}>
           No hay productos disponibles por el momento. ¡Crea uno!
         </Alert>
@@ -131,21 +123,35 @@ export default function Products() {
         </Box>
       )}
 
-      {totalPages > 1 && (
-        <Pagination
-          count={totalPages}
-          page={page}
-          onChange={(_, value) => setPage(value)}
-          color="primary"
-          sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}
-        />
-      )}
+      <Pagination
+        count={Math.max(1, totalPages)}
+        page={page}
+        onChange={(_, value) => setPage(value)}
+        color="primary"
+        sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}
+      />
 
       <CreateProductModal 
         open={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        onProductCreated={handleProductCreated} 
+        onProductCreated={() => {
+          refreshProducts();
+          setToastOpen(true);
+        }} 
       />
+
+      <Snackbar 
+        open={toastOpen} 
+        autoHideDuration={4000} 
+        onClose={() => setToastOpen(false)} 
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={() => setToastOpen(false)} severity="success" sx={{ width: '100%', borderRadius: 2 }}>
+          ¡Producto creado exitosamente!
+        </Alert>
+      </Snackbar>
     </Box>
   );
-}
+};
+
+export default Products;

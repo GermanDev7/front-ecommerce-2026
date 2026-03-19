@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
   Button,
-  CircularProgress,
   Alert,
   Paper,
   Table,
@@ -14,40 +13,27 @@ import {
   TableRow,
   Chip,
   TablePagination,
+  Skeleton,
+  Snackbar,
 } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
-import { getOrders, type Order } from '../services/api';
 import CreateOrderModal from '../components/CreateOrderModal';
+import { useOrders } from '../hooks/useOrders';
 
-export default function Orders() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const Orders: React.FC = () => {
+  const {
+    orders: paginatedOrders,
+    totalCount,
+    loading,
+    error,
+    page,
+    rowsPerPage,
+    handleChangePage,
+    handleChangeRowsPerPage,
+    refreshOrders
+  } = useOrders();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(15);
-
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      const data = await getOrders();
-      setOrders(Array.isArray(data) ? data : []);
-      setError(null);
-    } catch (err) {
-      setError('Could not connect to the API or an error occurred.');
-      setOrders([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchOrders();
-  }, []);
-
-  const handleOrderCreated = () => {
-    fetchOrders();
-  };
+  const [toastOpen, setToastOpen] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
@@ -57,18 +43,6 @@ export default function Orders() {
       default: return 'default';
     }
   };
-
-  const handleChangePage = (_event: unknown, newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  const safeOrders = Array.isArray(orders) ? orders : [];
-  const paginatedOrders = safeOrders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <Box>
@@ -93,10 +67,31 @@ export default function Orders() {
       )}
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
-          <CircularProgress size={60} thickness={4} />
-        </Box>
-      ) : safeOrders.length === 0 && !error ? (
+        <TableContainer component={Paper} sx={{ borderRadius: 2, overflow: 'hidden', boxShadow: 3 }}>
+          <Table>
+            <TableHead sx={{ backgroundColor: 'primary.main' }}>
+              <TableRow>
+                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>ID Órden</TableCell>
+                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Fecha</TableCell>
+                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Estado</TableCell>
+                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }}>Artículos</TableCell>
+                <TableCell sx={{ color: 'primary.contrastText', fontWeight: 'bold' }} align="right">Total</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {[...Array(5)].map((_, index) => (
+                <TableRow key={index} hover>
+                  <TableCell><Skeleton variant="text" width={60} /></TableCell>
+                  <TableCell><Skeleton variant="text" width={120} /></TableCell>
+                  <TableCell><Skeleton variant="rectangular" width={90} height={24} sx={{ borderRadius: 4 }} /></TableCell>
+                  <TableCell><Skeleton variant="text" width={50} /></TableCell>
+                  <TableCell align="right"><Skeleton variant="text" width={80} sx={{ ml: 'auto' }} /></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      ) : paginatedOrders.length === 0 && !error ? (
         <Alert severity="info" sx={{ borderRadius: 2 }}>
           No se encontraron órdenes. ¡Crea una!
         </Alert>
@@ -120,17 +115,17 @@ export default function Orders() {
                 >
                   <TableCell component="th" scope="row">
                     <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>
-                      {order.id.slice(0, 13)}...
+                      #ORD-{order.id.slice(0, 8).toUpperCase()}
                     </Typography>
                   </TableCell>
                   <TableCell>{new Date(order.createdAt).toLocaleDateString()} {new Date(order.createdAt).toLocaleTimeString()}</TableCell>
                   <TableCell>
-                    <Chip 
-                      label={order.status === 'COMPLETED' ? 'COMPLETADO' : order.status === 'PENDING' ? 'PENDIENTE' : order.status === 'CANCELLED' ? 'CANCELADO' : order.status} 
-                      color={getStatusColor(order.status) as any} 
-                      size="small" 
-                      variant="outlined" 
-                      sx={{ fontWeight: 'bold' }} 
+                    <Chip
+                      label={order.status === 'COMPLETED' ? 'COMPLETADO' : order.status === 'PENDING' ? 'PENDIENTE' : order.status === 'CANCELLED' ? 'CANCELADO' : order.status}
+                      color={getStatusColor(order.status) as any}
+                      size="small"
+                      variant="outlined"
+                      sx={{ fontWeight: 'bold' }}
                     />
                   </TableCell>
                   <TableCell>{order.items?.length || 0} ítems</TableCell>
@@ -146,10 +141,10 @@ export default function Orders() {
         </TableContainer>
       )}
 
-      {safeOrders.length > 0 && (
+      {totalCount > 0 && (
         <TablePagination
           component="div"
-          count={safeOrders.length}
+          count={totalCount}
           page={page}
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
@@ -160,11 +155,27 @@ export default function Orders() {
         />
       )}
 
-      <CreateOrderModal 
-        open={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onOrderCreated={handleOrderCreated} 
+      <CreateOrderModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onOrderCreated={() => {
+          refreshOrders();
+          setToastOpen(true);
+        }}
       />
+
+      <Snackbar 
+        open={toastOpen} 
+        autoHideDuration={4000} 
+        onClose={() => setToastOpen(false)} 
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={() => setToastOpen(false)} severity="success" sx={{ width: '100%', borderRadius: 2 }}>
+          ¡Orden creada exitosamente!
+        </Alert>
+      </Snackbar>
     </Box>
   );
-}
+};
+
+export default Orders;
