@@ -15,12 +15,16 @@ import {
   Storefront as StorefrontIcon,
   ShoppingCart as ShoppingCartIcon,
   Inventory as InventoryIcon,
+  Login as LoginIcon,
+  Logout as LogoutIcon,
 } from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext';
 
 const Layout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const theme = useTheme();
+  const { isAuthenticated, logout } = useAuth();
 
   const navItems = [
     { label: 'Productos', path: '/', icon: <StorefrontIcon sx={{ mr: 1 }} /> },
@@ -51,7 +55,7 @@ const Layout: React.FC = () => {
             E-COMMERCE
           </Typography>
           <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 2 }}>
-            {navItems.map((item) => (
+            {isAuthenticated && navItems.map((item) => (
               <Button
                 key={item.label}
                 onClick={() => navigate(item.path)}
@@ -69,6 +73,18 @@ const Layout: React.FC = () => {
                 {item.label}
               </Button>
             ))}
+            
+            {isAuthenticated ? (
+              <Button color="inherit" onClick={logout} sx={{ ml: 2 }}>
+                <LogoutIcon sx={{ mr: 1 }} />
+                Salir
+              </Button>
+            ) : (
+              <Button color="inherit" onClick={() => navigate('/login')} sx={{ ml: 2 }}>
+                <LoginIcon sx={{ mr: 1 }} />
+                Iniciar Sesión
+              </Button>
+            )}
           </Box>
         </Toolbar>
       </AppBar>
